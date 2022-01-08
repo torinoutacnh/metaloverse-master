@@ -35,7 +35,7 @@ function App() {
   useEffect(() => {
     dispatch(refreshToken())
 
-    const socket = io()
+    const socket = io("https://socket.solbook.io")
     dispatch({type: GLOBALTYPES.SOCKET, payload: socket})
     return () => socket.close()
   },[dispatch])
