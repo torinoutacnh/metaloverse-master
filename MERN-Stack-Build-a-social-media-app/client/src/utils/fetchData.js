@@ -1,5 +1,7 @@
 import axios from 'axios'
+
 var BASE_URL = "https://socket.solbook.io";
+
 export const getDataAPI = async (url, token) => {
     const res = await axios.get(BASE_URL+`/api/${url}`, {
         headers: { Authorization: token}

@@ -19,6 +19,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@solana/spl-token": "^0.1.8",
     "api": "^4.2.0",
     "bcrypt": "^5.0.0",
     "cloudinary": "^1.28.1",
