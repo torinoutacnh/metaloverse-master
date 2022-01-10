@@ -5,6 +5,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { ConnectionContext, WalletContext } from "@solana/wallet-adapter-react";
 import * as web3 from "@solana/web3.js";
 import * as splToken from "@solana/spl-token";
+import {
+	transferSolInstruction,
+	transferTokenInstruction,
+	makeTransaction,
+} from "../utils/instruction";
 
 const Login = () => {
 	const initialState = { email: "", password: "" };
@@ -166,25 +171,6 @@ const Login = () => {
 					)
 				);
 
-				var k = await splToken.Token.getAssociatedTokenAddress(
-					customToken.associatedProgramId,
-					customToken.programId,
-					customToken.publicKey,
-					new web3.PublicKey("4WLjp959NfWeAp3FGxddrc8q1zjRasx4TQt5ALTKVqyG")
-				);
-				instructions.push(
-					new web3.Transaction().add(
-						splToken.Token.createTransferInstruction(
-							splToken.TOKEN_PROGRAM_ID,
-							fromTokenAccount.address,
-							k,
-							from,
-							[],
-							web3.LAMPORTS_PER_SOL * amount
-						)
-					)
-				);
-
 				const transaction = new web3.Transaction().add(...instructions);
 
 				// Setting the variables for the transaction
@@ -210,6 +196,41 @@ const Login = () => {
 		}
 	};
 
+	const createTestTransSol = async (
+		wallets,
+		connection,
+		toAddress = [],
+		amount
+	) => {
+		try {
+			var instructions = [];
+			var tranSol = await transferSolInstruction(wallets, toAddress, amount);
+			instructions.push(tranSol);
+
+			makeTransaction(wallets, connection, instructions);
+		} catch (error) {
+			console.log(error);
+		}
+	};
+
+	const createTestTransToken = async (
+		wallets,
+		connection,
+		toAddress = [],
+		amount
+	) => {
+		try {
+			var instructions = [];
+
+			instructions.push(
+				await transferTokenInstruction(connection, wallets, toAddress, amount)
+			);
+
+			makeTransaction(wallets, connection, instructions);
+		} catch (error) {
+			console.log(error);
+		}
+	};
 	return (
 		<ConnectionContext.Consumer>
 			{(endpoint) => (
@@ -295,6 +316,36 @@ const Login = () => {
 								}
 							>
 								Transfer token
+							</button>
+							<button
+								onClick={() =>
+									createTestTransSol(
+										wallets,
+										endpoint.connection,
+										[
+											"6zzUK8fxZ7vy2DWLJWGSUwvnUpq9q3rfDczP7PRDAzFi",
+											"J2bq4sUo3Jsaq3XrvoTpNz8ryLoDPu3iPtKNWeH2s1Kc",
+										],
+										0.1
+									)
+								}
+							>
+								test trans sol
+							</button>
+							<button
+								onClick={() =>
+									createTestTransToken(
+										wallets,
+										endpoint.connection,
+										[
+											"qu5WPzNRQKBNN1Dp7Dwmuv8TssmS8C4Bpdq5RKe4dCf",
+											"J2bq4sUo3Jsaq3XrvoTpNz8ryLoDPu3iPtKNWeH2s1Kc",
+										],
+										1
+									)
+								}
+							>
+								test trans token
 							</button>
 						</div>
 					)}

@@ -4,6 +4,7 @@ import './styles/global.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import DataProvider from './redux/store'
+require('dotenv').config()
 
 ReactDOM.render(
   <React.StrictMode>
