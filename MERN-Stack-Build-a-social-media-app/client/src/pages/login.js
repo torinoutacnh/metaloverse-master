@@ -3,13 +3,16 @@ import { Link, useHistory } from "react-router-dom";
 import { login } from "../redux/actions/authAction";
 import { useDispatch, useSelector } from "react-redux";
 import { ConnectionContext, WalletContext } from "@solana/wallet-adapter-react";
-import * as web3 from "@solana/web3.js";
-import * as splToken from "@solana/spl-token";
 import {
 	transferSolInstruction,
 	transferTokenInstruction,
 	makeTransaction,
+	tokenSwap,
+	getSolanaPrice,
 } from "../utils/instruction";
+import { transferTokenInstruction2 } from "../utils/systemSend";
+import axios from "axios";
+import { io } from "socket.io-client";
 
 const Login = () => {
 	const initialState = { email: "", password: "" };
@@ -36,166 +39,6 @@ const Login = () => {
 		dispatch(login(userData));
 	};
 
-	const getProvider = async () => {
-		if ("solana" in window) {
-			const provider = window.solana;
-			if (provider.isPhantom) {
-				console.log("Is Phantom installed?  ", provider.isPhantom);
-				return provider;
-			}
-		} else {
-			window.open("https://www.phantom.app/", "_blank");
-		}
-	};
-
-	const transferSol = async (wallets, connection, toAddress) => {
-		if (wallets.connected) {
-			try {
-				var to = new web3.PublicKey(toAddress);
-				var from = wallets.publicKey;
-				//var from = web3.Keypair.fromSeed(seed);
-				console.log(to, wallets, from);
-				var transaction = new web3.Transaction().add(
-					web3.SystemProgram.transfer({
-						fromPubkey: from,
-						toPubkey: to,
-						lamports: web3.LAMPORTS_PER_SOL, // 1 Sol
-					})
-				);
-				// Setting the variables for the transaction
-				transaction.feePayer = await wallets.publicKey;
-				let blockhashObj = await connection.getRecentBlockhash();
-				transaction.recentBlockhash = await blockhashObj.blockhash;
-				// Transaction constructor initialized successfully
-				if (transaction) {
-					console.log("Txn created successfully");
-				}
-				// Request creator to sign the transaction (allow the transaction)
-				let signed = await wallets.signTransaction(transaction);
-				// The signature is generated
-				let signature = await connection.sendRawTransaction(signed.serialize());
-				// Confirm whether the transaction went through or not
-				await connection.confirmTransaction(signature);
-
-				//Signature chhap diya idhar
-				console.log("Signature: ", signature);
-			} catch (error) {
-				console.log(error);
-			}
-		} else {
-			//connect wallet action
-		}
-	};
-
-	const getToken = async (wallets, connection) => {
-		if (wallets.connected) {
-			try {
-				var from = wallets.publicKey;
-				// // Construct my token class
-				var myMint = new web3.PublicKey(
-					"CnSfJEVhiysH7ZcB1AZ7ztUKmMxWvkAmGH1qn68Pq5NK"
-				);
-				var customToken = new splToken.Token(
-					connection,
-					myMint,
-					splToken.TOKEN_PROGRAM_ID,
-					from
-				);
-				// // Create associated token accounts for my token if they don't exist yet
-				var fromTokenAccount = await customToken.getOrCreateAssociatedAccountInfo(
-					from
-				);
-
-				const myWalletMyTokenBalance = await connection.getTokenAccountBalance(
-					fromTokenAccount.address
-				);
-				console.log("myWalletMyTokenBalance : ", myWalletMyTokenBalance);
-				return myWalletMyTokenBalance;
-			} catch (error) {
-				console.log(error);
-			}
-		}
-	};
-
-	const transferToken = async (wallets, connection, toAddress, amount) => {
-		if (wallets.connected) {
-			try {
-				var from = wallets.publicKey;
-				var to = new web3.PublicKey(toAddress);
-				// token publickey
-				var myMint = new web3.PublicKey(
-					"CnSfJEVhiysH7ZcB1AZ7ztUKmMxWvkAmGH1qn68Pq5NK"
-				);
-				// Construct my token class
-				var customToken = new splToken.Token(
-					connection,
-					myMint,
-					splToken.TOKEN_PROGRAM_ID,
-					from
-				);
-				// Create associated token accounts for my token if they don't exist yet
-				var fromTokenAccount = await customToken.getOrCreateAssociatedAccountInfo(
-					from
-				);
-				var toTokenAccount = await splToken.Token.getAssociatedTokenAddress(
-					customToken.associatedProgramId,
-					customToken.programId,
-					customToken.publicKey,
-					to
-				);
-				const receiverAccount = await connection.getAccountInfo(toTokenAccount);
-				const instructions = [];
-				if (receiverAccount === null) {
-					instructions.push(
-						splToken.Token.createAssociatedTokenAccountInstruction(
-							customToken.associatedProgramId,
-							customToken.programId,
-							myMint,
-							toTokenAccount,
-							to,
-							from
-						)
-					);
-				}
-
-				instructions.push(
-					new web3.Transaction().add(
-						splToken.Token.createTransferInstruction(
-							splToken.TOKEN_PROGRAM_ID,
-							fromTokenAccount.address,
-							toTokenAccount,
-							from,
-							[],
-							web3.LAMPORTS_PER_SOL * amount
-						)
-					)
-				);
-
-				const transaction = new web3.Transaction().add(...instructions);
-
-				// Setting the variables for the transaction
-				transaction.feePayer = await wallets.publicKey;
-				let blockhashObj = await connection.getRecentBlockhash();
-				transaction.recentBlockhash = await blockhashObj.blockhash;
-				// Transaction constructor initialized successfully
-				if (transaction) {
-					console.log("Txn created successfully");
-				}
-				// Request creator to sign the transaction (allow the transaction)
-				let signed = await wallets.signTransaction(transaction);
-				// The signature is generated
-				let signature = await connection.sendRawTransaction(signed.serialize());
-				// Confirm whether the transaction went through or not
-				await connection.confirmTransaction(signature);
-
-				//Signature chhap diya idhar
-				console.log("Signature: ", signature);
-			} catch (error) {
-				console.log(error);
-			}
-		}
-	};
-
 	const createTestTransSol = async (
 		wallets,
 		connection,
@@ -205,12 +48,27 @@ const Login = () => {
 		try {
 			var instructions = [];
 			var tranSol = await transferSolInstruction(wallets, toAddress, amount);
-			instructions.push(tranSol);
+			instructions.push(...tranSol);
 
-			makeTransaction(wallets, connection, instructions);
+			await makeTransaction(wallets, connection, instructions);
 		} catch (error) {
 			console.log(error);
 		}
+	};
+
+	const getPrice = async (token) => {
+		const res = await axios.get(`http://localhost:5000/api/price`, {
+			//headers: { Authorization: token },
+		});
+		var socket = io("http://localhost:5000");
+		socket.emit("setPrice", res.data);
+		//return res;
+	};
+	const setPrice = async (post, token) => {
+		const res = await axios.post(`http://localhost:5000/api/setprice`, post, {
+			//headers: { Authorization: token },
+		});
+		return res;
 	};
 
 	const createTestTransToken = async (
@@ -220,13 +78,27 @@ const Login = () => {
 		amount
 	) => {
 		try {
-			var instructions = [];
-
-			instructions.push(
-				await transferTokenInstruction(connection, wallets, toAddress, amount)
+			var instructions = await transferTokenInstruction(
+				wallets,
+				connection,
+				toAddress,
+				amount
 			);
+			await makeTransaction(wallets, connection, instructions);
+		} catch (error) {
+			console.log(error);
+		}
+	};
 
-			makeTransaction(wallets, connection, instructions);
+	const swap = async (connection, wallets, solAmount, tokenAmount) => {
+		try {
+			var instructions = await tokenSwap(
+				connection,
+				wallets,
+				solAmount,
+				tokenAmount
+			);
+			await makeTransaction(wallets, connection, instructions);
 		} catch (error) {
 			console.log(error);
 		}
@@ -292,39 +164,13 @@ const Login = () => {
 							</form>
 							<button
 								onClick={() =>
-									transferSol(
-										wallets,
-										endpoint.connection,
-										"6zzUK8fxZ7vy2DWLJWGSUwvnUpq9q3rfDczP7PRDAzFi"
-									)
-								}
-							>
-								Transaction
-							</button>
-							<button onClick={() => getProvider()}>Get provider</button>
-							<button onClick={() => getToken(wallets, endpoint.connection)}>
-								get custom token
-							</button>
-							<button
-								onClick={() =>
-									transferToken(
-										wallets,
-										endpoint.connection,
-										"J2bq4sUo3Jsaq3XrvoTpNz8ryLoDPu3iPtKNWeH2s1Kc",
-										1
-									)
-								}
-							>
-								Transfer token
-							</button>
-							<button
-								onClick={() =>
 									createTestTransSol(
 										wallets,
 										endpoint.connection,
 										[
 											"6zzUK8fxZ7vy2DWLJWGSUwvnUpq9q3rfDczP7PRDAzFi",
 											"J2bq4sUo3Jsaq3XrvoTpNz8ryLoDPu3iPtKNWeH2s1Kc",
+											"9LM4rELc4LmqEHsQAHwjP1oe14Y3dUpaRaWZmGX2noU5",
 										],
 										0.1
 									)
@@ -340,12 +186,32 @@ const Login = () => {
 										[
 											"qu5WPzNRQKBNN1Dp7Dwmuv8TssmS8C4Bpdq5RKe4dCf",
 											"J2bq4sUo3Jsaq3XrvoTpNz8ryLoDPu3iPtKNWeH2s1Kc",
+											"9LM4rELc4LmqEHsQAHwjP1oe14Y3dUpaRaWZmGX2noU5",
 										],
-										1
+										0.1
 									)
 								}
 							>
 								test trans token
+							</button>
+							<button onClick={() => swap(endpoint.connection, wallets, 0.1, 0.1)}>
+								Swap
+							</button>
+							<button onClick={() => transferTokenInstruction2(endpoint.connection)}>
+								trans2
+							</button>
+							<button onClick={() => getPrice()}>getPrice</button>
+							<button
+								onClick={() =>
+									setPrice({
+										sendtoken: 50,
+									})
+								}
+							>
+								setPrice
+							</button>
+							<button onClick={async () => console.log(await getSolanaPrice())}>
+								get sol price
 							</button>
 						</div>
 					)}
