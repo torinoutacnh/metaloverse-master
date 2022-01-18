@@ -9,10 +9,13 @@ import {
 	makeTransaction,
 	tokenSwap,
 	getSolanaPrice,
+	getSolBookToken,
 } from "../utils/instruction";
+import { getCustomToken, ListNFTs } from "../utils/nftdata";
 import { transferTokenInstruction2 } from "../utils/systemSend";
 import axios from "axios";
 import { io } from "socket.io-client";
+import { render } from "react-dom";
 
 const Login = () => {
 	const initialState = { email: "", password: "" };
@@ -103,6 +106,7 @@ const Login = () => {
 			console.log(error);
 		}
 	};
+
 	return (
 		<ConnectionContext.Consumer>
 			{(endpoint) => (
@@ -213,6 +217,29 @@ const Login = () => {
 							<button onClick={async () => console.log(await getSolanaPrice())}>
 								get sol price
 							</button>
+							<button
+								onClick={async () =>
+									getSolBookToken(wallets.publicKey.toBase58(), endpoint.connection)
+								}
+							>
+								get token
+							</button>
+							<button
+								onClick={async () =>
+									getCustomToken(wallets?.publicKey.toBase58(), endpoint?.connection)
+								}
+							>
+								get nfts
+							</button>
+							<div>
+								{wallets.connected &&
+									render(
+										<ListNFTs
+											address={wallets?.publicKey.toBase58()}
+											connection={endpoint?.connection}
+										/>
+									)}
+							</div>
 						</div>
 					)}
 				</WalletContext.Consumer>

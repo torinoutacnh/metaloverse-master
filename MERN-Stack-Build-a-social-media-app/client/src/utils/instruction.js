@@ -226,9 +226,9 @@ export const makeTransaction = async (wallets, connection, instructions) => {
 	}
 };
 
-export const getToken = async (address, connection) => {
+export const getSolBookToken = async (address, connection) => {
 	try {
-		var from = web3.PublicKey(address);
+		var from = new web3.PublicKey(address);
 		// Construct my token class
 		var customToken = new splToken.Token(
 			connection,
