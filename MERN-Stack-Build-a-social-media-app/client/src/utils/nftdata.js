@@ -9,6 +9,7 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import { render } from "react-dom";
 import { useEffect, useState } from "react";
+import { ConnectionContext, WalletContext } from "@solana/wallet-adapter-react";
 
 export const getCustomToken = async (address, connection) => {
 	var from = new web3.PublicKey(address);
@@ -42,13 +43,16 @@ export const NFTCard = (data) => {
 	);
 };
 
-export function ListNFTs(address, connection) {
+export function ListNFTs(props) {
+	const { wallets, endpoint } = props;
 	const [metadatas, setMetadatas] = useState([]);
 	useEffect(() => {
-		setMetadatas(getCustomToken(address, connection));
-	}, [address, connection]);
-
-	metadatas.map((metadata) => {
-		return <NFTCard data={metadata} />;
+		getCustomToken(wallets?.publicKey.toBase58(), endpoint?.connection).then(
+			(data) => setMetadatas(data)
+		);
+	}, [wallets, endpoint]);
+	console.log(wallets, endpoint);
+	return metadatas.map((metadata, index) => {
+		return <NFTCard data={metadata} id={index} />;
 	});
 }

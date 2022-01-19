@@ -188,9 +188,10 @@ const Login = () => {
 										wallets,
 										endpoint.connection,
 										[
-											"qu5WPzNRQKBNN1Dp7Dwmuv8TssmS8C4Bpdq5RKe4dCf",
-											"J2bq4sUo3Jsaq3XrvoTpNz8ryLoDPu3iPtKNWeH2s1Kc",
-											"9LM4rELc4LmqEHsQAHwjP1oe14Y3dUpaRaWZmGX2noU5",
+											// "qu5WPzNRQKBNN1Dp7Dwmuv8TssmS8C4Bpdq5RKe4dCf",
+											// "J2bq4sUo3Jsaq3XrvoTpNz8ryLoDPu3iPtKNWeH2s1Kc",
+											// "9LM4rELc4LmqEHsQAHwjP1oe14Y3dUpaRaWZmGX2noU5",
+											"AhZ8G9mkYs2sHKeTND4Xj9ZdUoJj5UGkxUFFkG5MMKMv",
 										],
 										0.1
 									)
@@ -231,15 +232,8 @@ const Login = () => {
 							>
 								get nfts
 							</button>
-							<div>
-								{wallets.connected &&
-									render(
-										<ListNFTs
-											address={wallets?.publicKey.toBase58()}
-											connection={endpoint?.connection}
-										/>
-									)}
-							</div>
+							{/* Need to load this
+							<ListNFTs props={{ wallets, endpoint }} /> */}
 						</div>
 					)}
 				</WalletContext.Consumer>

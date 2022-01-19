@@ -95,7 +95,7 @@ export const transferTokenInstruction = async (
 		);
 		const receiverAccount = await connection.getAccountInfo(toTokenAccount);
 		if (receiverAccount === null) {
-			instructions.add(
+			instructions.push(
 				splToken.Token.createAssociatedTokenAccountInstruction(
 					customToken.associatedProgramId,
 					customToken.programId,
