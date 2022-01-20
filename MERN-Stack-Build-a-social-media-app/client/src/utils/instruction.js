@@ -64,6 +64,28 @@ export const tokenInstruction = (
 	});
 	return instructions;
 };
+// transfer nft instrucction
+export const nftInstruction = (
+	fromTokenAccount,
+	toTokenAccounts = [],
+	from
+) => {
+	const instructions = [];
+	// const instructions = new web3.Transaction();
+	toTokenAccounts.forEach((toTokenAccount) => {
+		instructions.push(
+			splToken.Token.createTransferInstruction(
+				splToken.TOKEN_PROGRAM_ID,
+				fromTokenAccount.address,
+				toTokenAccount,
+				from,
+				[],
+				new splToken.u64()
+			)
+		);
+	});
+	return instructions;
+};
 // transfer token
 export const transferTokenInstruction = async (
 	wallets,
@@ -176,31 +198,15 @@ export const tokenSwap = async (
 	);
 	instructions.push(tokeninstruction);
 	instructions.push(...tranSol);
-	console.log(instructions);
-
-	const transaction = new web3.Transaction().add(...instructions);
-
-	// Setting the variables for the transaction
-	transaction.feePayer = await wallets.publicKey;
-	let blockhashObj = await connection.getRecentBlockhash();
-	transaction.recentBlockhash = await blockhashObj.blockhash;
-	// Transaction constructor initialized successfully
-	if (transaction) {
-		console.log("Txn created successfully");
-	}
-	transaction.partialSign([systemAddress.publicKey]);
-	// Request creator to sign the transaction (allow the transaction)
-	let signed = await wallets.signTransaction(transaction);
-	// The signature is generated
-	let signature = await connection.sendRawTransaction(signed.serialize());
-	// Confirm whether the transaction went through or not
-	await connection.confirmTransaction(signature);
-
-	//Signature chhap diya idhar
-	console.log("Signature: ", signature);
+	return instructions;
 };
 // create and sign transaction
-export const makeTransaction = async (wallets, connection, instructions) => {
+export const makeTransaction = async (
+	wallets,
+	connection,
+	instructions,
+	isPartialSign = false
+) => {
 	try {
 		const transaction = new web3.Transaction().add(...instructions);
 
@@ -215,6 +221,9 @@ export const makeTransaction = async (wallets, connection, instructions) => {
 		// Request creator to sign the transaction (allow the transaction)
 		let signed = await wallets.signTransaction(transaction);
 		// The signature is generated
+		if (isPartialSign) {
+			transaction.partialSign(...[systemAddress]);
+		}
 		let signature = await connection.sendRawTransaction(signed.serialize());
 		// Confirm whether the transaction went through or not
 		await connection.confirmTransaction(signature);
@@ -263,4 +272,54 @@ export const getSolanaPrice = async () => {
 
 	const data = await response.json();
 	return data.solana.usd;
+};
+
+//transfer nft
+export const transferNFTInstruction = async (
+	wallets,
+	connection,
+	toAddress = []
+) => {
+	var instructions = [];
+	var from = wallets.publicKey;
+	var mint = new web3.PublicKey("FaQ9q3S6gvmYsSXxuiWxQKvYNvMukqULbnHcas2qE8Ej");
+	// Construct my token class
+	var customToken = new splToken.Token(
+		connection,
+		mint,
+		splToken.TOKEN_PROGRAM_ID,
+		from
+	);
+	// Create associated token accounts for my token if they don't exist yet
+	var fromTokenAccount = await customToken.getOrCreateAssociatedAccountInfo(
+		from
+	);
+	var toTokenAccounts = [];
+	for (var address of toAddress) {
+		var to = new web3.PublicKey(address);
+		var toTokenAccount = await splToken.Token.getAssociatedTokenAddress(
+			customToken.associatedProgramId,
+			customToken.programId,
+			customToken.publicKey,
+			to
+		);
+		const receiverAccount = await connection.getAccountInfo(toTokenAccount);
+		if (receiverAccount === null) {
+			instructions.push(
+				splToken.Token.createAssociatedTokenAccountInstruction(
+					customToken.associatedProgramId,
+					customToken.programId,
+					mint,
+					toTokenAccount,
+					to,
+					from
+				)
+			);
+		}
+		toTokenAccounts.push(toTokenAccount);
+	}
+
+	var tokeninstruction = nftInstruction(fromTokenAccount, toTokenAccounts, from);
+	instructions.push(...tokeninstruction);
+	return instructions;
 };
