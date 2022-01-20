@@ -208,8 +208,8 @@ function App() {
 			<ConnectionProvider endpoint={endpoint}>
 				<WalletProvider wallets={wallets} autoConnect>
 					<WalletModalProvider>
-						<WalletMultiButton />
-						<WalletDisconnectButton />
+						{/* <WalletMultiButton />
+						<WalletDisconnectButton /> */}
 						<Alert />
 						<input type="checkbox" id="theme" />
 						<div className={`App ${(status || modal) && "mode"}`}>

@@ -7,8 +7,15 @@ import CardMedia from "@mui/material/CardMedia";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import { useEffect, useState } from "react";
+<<<<<<< HEAD
+import { ConnectionContext, WalletContext } from "@solana/wallet-adapter-react";
+
+export const getCustomToken = async (connection) => {
+	var from = new web3.PublicKey('9EXvDdRhcHcSY4srb4tPw4PSprJg223HutTakwECJv6S');
+=======
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import axios from "axios";
+>>>>>>> 91cf41b1840e26834f8db33906d6419ae7cbb7ee
 
 export const getCustomToken = async (connection) => {
 	var from = new web3.PublicKey("6FVxrqH9FFtEFo643pYx8w5GqfYRS8uWA5hZMUn1VNFr");
