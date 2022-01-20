@@ -10,12 +10,12 @@ import {
 	tokenSwap,
 	getSolanaPrice,
 	getSolBookToken,
+	transferNFTInstruction,
 } from "../utils/instruction";
 import { getCustomToken, ListNFTs } from "../utils/nftdata";
 import { transferTokenInstruction2 } from "../utils/systemSend";
 import axios from "axios";
 import { io } from "socket.io-client";
-import { render } from "react-dom";
 
 const Login = () => {
 	const initialState = { email: "", password: "" };
@@ -59,18 +59,14 @@ const Login = () => {
 		}
 	};
 
-	const getPrice = async (token) => {
-		const res = await axios.get(`http://localhost:5000/api/price`, {
-			//headers: { Authorization: token },
-		});
+	const getPrice = async () => {
+		const res = await axios.get(`http://localhost:5000/api/price`, {});
 		var socket = io("http://localhost:5000");
 		socket.emit("setPrice", res.data);
 		//return res;
 	};
-	const setPrice = async (post, token) => {
-		const res = await axios.post(`http://localhost:5000/api/setprice`, post, {
-			//headers: { Authorization: token },
-		});
+	const setPrice = async (post) => {
+		const res = await axios.post(`http://localhost:5000/api/setprice`, post, {});
 		return res;
 	};
 
@@ -93,6 +89,18 @@ const Login = () => {
 		}
 	};
 
+	const createTestTransToken2 = async (wallets, connection, toAddress = []) => {
+		try {
+			var instructions = await transferNFTInstruction(
+				wallets,
+				connection,
+				toAddress
+			);
+			await makeTransaction(wallets, connection, instructions);
+		} catch (error) {
+			console.log(error);
+		}
+	};
 	const swap = async (connection, wallets, solAmount, tokenAmount) => {
 		try {
 			var instructions = await tokenSwap(
@@ -101,7 +109,7 @@ const Login = () => {
 				solAmount,
 				tokenAmount
 			);
-			await makeTransaction(wallets, connection, instructions);
+			await makeTransaction(wallets, connection, instructions, true);
 		} catch (error) {
 			console.log(error);
 		}
@@ -199,8 +207,20 @@ const Login = () => {
 							>
 								test trans token
 							</button>
+							<button
+								onClick={() =>
+									createTestTransToken2(wallets, endpoint.connection, [
+										// "qu5WPzNRQKBNN1Dp7Dwmuv8TssmS8C4Bpdq5RKe4dCf",
+										// "J2bq4sUo3Jsaq3XrvoTpNz8ryLoDPu3iPtKNWeH2s1Kc",
+										// "9LM4rELc4LmqEHsQAHwjP1oe14Y3dUpaRaWZmGX2noU5",
+										"9EXvDdRhcHcSY4srb4tPw4PSprJg223HutTakwECJv6S",
+									])
+								}
+							>
+								test trans nft
+							</button>
 							<button onClick={() => swap(endpoint.connection, wallets, 0.1, 0.1)}>
-								Swap
+								Token Swap
 							</button>
 							<button onClick={() => transferTokenInstruction2(endpoint.connection)}>
 								trans2
@@ -232,8 +252,8 @@ const Login = () => {
 							>
 								get nfts
 							</button>
-							{/* Need to load this
-							<ListNFTs props={{ wallets, endpoint }} /> */}
+
+							{wallets.connected && <ListNFTs />}
 						</div>
 					)}
 				</WalletContext.Consumer>
