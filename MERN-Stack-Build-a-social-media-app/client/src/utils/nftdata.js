@@ -8,22 +8,26 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import { useEffect, useState } from "react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import axios from "axios";
 
-export const getCustomToken = async (address, connection) => {
-	var from = new web3.PublicKey(address);
+export const getCustomToken = async (connection) => {
+	var from = new web3.PublicKey("6FVxrqH9FFtEFo643pYx8w5GqfYRS8uWA5hZMUn1VNFr");
 	const nftsmetadata = await metadata.Metadata.findDataByOwner(connection, from);
 	return nftsmetadata;
 };
 
 export const NFTCard = (data) => {
-	console.log(data);
+	const [metadatadata, setMetadatadata] = useState({});
+	useEffect(() => {
+		axios.get(data.data.data.uri, {}).then((data) => setMetadatadata(data));
+	}, []);
 	//var meta = axios.get(data.data.data.uri, {});
 	return (
 		<Card sx={{ maxWidth: 345 }}>
 			<CardMedia
 				component="img"
 				height="140"
-				image=""
+				image={metadatadata.data.image}
 				alt={data.data.data.symbol}
 			/>
 			<CardContent>
@@ -46,9 +50,10 @@ export function ListNFTs() {
 	const wallets = useWallet();
 	const [metadatas, setMetadatas] = useState([]);
 	useEffect(() => {
-		getCustomToken(wallets?.publicKey.toBase58(), connection).then((data) =>
-			setMetadatas(data)
-		);
+		// getCustomToken(wallets?.publicKey.toBase58(), connection).then((data) =>
+		// 	setMetadatas(data)
+		// );
+		getCustomToken(connection).then((data) => setMetadatas(data));
 	}, [wallets, connection]);
 	console.log(wallets, connection);
 	return metadatas.map((data, index) => {
