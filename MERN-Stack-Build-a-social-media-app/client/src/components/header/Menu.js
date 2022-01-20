@@ -1,10 +1,35 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
+import {getCustomToken} from '../../utils/nftdata'
+import {useConnection} from '@solana/wallet-adapter-react'
 import { logout } from '../../redux/actions/authAction'
 import { GLOBALTYPES } from '../../redux/actions/globalTypes'
 import Avatar from '../Avatar'
 import NotifyModal from '../NotifyModal'
+import {
+	ConnectionProvider,
+	WalletProvider,
+} from "@solana/wallet-adapter-react";
+import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
+import {
+	LedgerWalletAdapter,
+	PhantomWalletAdapter,
+	SlopeWalletAdapter,
+	SolflareWalletAdapter,
+	SolletExtensionWalletAdapter,
+	SolletWalletAdapter,
+	TorusWalletAdapter,
+} from "@solana/wallet-adapter-wallets";
+import {
+	WalletModalProvider,
+	WalletDisconnectButton,
+	WalletMultiButton,
+} from "@solana/wallet-adapter-react-ui";
+import { clusterApiUrl } from "@solana/web3.js";
+
+// Default styles that can be overridden by your app
+require("@solana/wallet-adapter-react-ui/styles.css");
 
 const Menu = () => {
     const navLinks = [
@@ -20,21 +45,23 @@ const Menu = () => {
     const isActive = (pn) => {
         if(pn === pathname) return 'active'
     }
-
+    
     return (
         <div className="menu">
             <ul className="navbar-nav flex-row">
                 {
-                    navLinks.map((link, index) => (
-                        <li className={`nav-item px-2 ${isActive(link.path)}`} key={index}>
-                            <Link className="nav-link" to={link.path}>
-                                <span className="material-icons">{link.icon}</span>
-                            </Link>
-                        </li>
-                    ))
+                    // navLinks.map((link, index) => (
+                    //     <li className={`nav-item px-2 ${isActive(link.path)}`} key={index}>
+                    //         <Link className="nav-link" to={link.path}>
+                    //             {/* <span className="material-icons">{link.icon}</span> */}
+                                
+                    //         </Link>
+                    //     </li>
+                    // ))
+                    <WalletMultiButton />
                 }
 
-                <li className="nav-item dropdown" style={{opacity: 1}} >
+                {/* <li className="nav-item dropdown" style={{opacity: 1}} >
                     <span className="nav-link position-relative" id="navbarDropdown" 
                     role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 
@@ -53,9 +80,9 @@ const Menu = () => {
                     </div>
                         
                 </li>
-           
+            */}
             
-                <li className="nav-item dropdown" style={{opacity: 1}} >
+                {/* <li className="nav-item dropdown" style={{opacity: 1}} >
                     <span className="nav-link dropdown-toggle" id="navbarDropdown" 
                     role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <Avatar src={auth.user.avatar} size="medium-avatar" />
@@ -78,7 +105,7 @@ const Menu = () => {
                         Logout
                     </Link>
                 </div>
-            </li>
+            </li> */}
         </ul>
     </div>
 

@@ -1,7 +1,7 @@
 .supper-avatar {
-    width: 150px;
+    width: auto;
     height: 150px;
-    border-radius: 50%;
+    border-radius: 0%;
 }
 
 .big-avatar {

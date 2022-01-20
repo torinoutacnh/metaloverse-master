@@ -41,7 +41,8 @@ const Info = ({id, auth, profile, dispatch}) => {
 
                         <div className="info_content">
                             <div className="info_content_title">
-                                <h2>{user.username}</h2>
+                                <h2>Finess VR Collections</h2>
+                                {/* <h2>{user.username}</h2>
                                 {
                                     user._id === auth.user._id
                                     ?  <button className="btn btn-outline-info"
@@ -50,27 +51,29 @@ const Info = ({id, auth, profile, dispatch}) => {
                                     </button>
                                     
                                     : <FollowBtn user={user} />
-                                }
+                                } */}
                                
                                 
                             </div>
 
-                            <div className="follow_btn">
+                            {/* <div className="follow_btn">
                                 <span className="mr-4" onClick={() => setShowFollowers(true)}>
                                     {user.followers.length} Followers
                                 </span>
                                 <span className="ml-4" onClick={() => setShowFollowing(true)}>
                                     {user.following.length} Following
                                 </span>
-                            </div>
+                            </div> */}
 
-                            <h6>{user.fullname} <span className="text-danger">{user.mobile}</span></h6>
-                            <p className="m-0">{user.address}</p>
+                            <h6>Total NFT: <span>10.000</span></h6>
+                            <h6>Total Holders: <span>10.000</span></h6>
+                            {/* <h6>{user.fullname} <span className="text-danger">{user.mobile}</span></h6> */}
+                            {/* <p className="m-0">{user.address}</p>
                             <h6 className="m-0">{user.email}</h6>
                             <a href={user.website} target="_blank" rel="noreferrer">
                                 {user.website}
                             </a>
-                            <p>{user.story}</p>
+                            <p>{user.story}</p> */}
                         </div>
 
                         {

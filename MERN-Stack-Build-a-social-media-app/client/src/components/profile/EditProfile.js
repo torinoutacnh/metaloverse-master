@@ -61,7 +61,7 @@ const EditProfile = ({setOnEdit}) => {
                     </span>
                 </div>
 
-                <div className="form-group">
+                {/* <div className="form-group">
                     <label htmlFor="fullname">Full Name</label>
                     <div className="position-relative">
                         <input type="text" className="form-control" id="fullname"
@@ -71,8 +71,8 @@ const EditProfile = ({setOnEdit}) => {
                             {fullname.length}/25
                         </small>
                     </div>
-                </div>
-
+                </div> */}
+{/* 
                 <div className="form-group">
                     <label htmlFor="mobile">Mobile</label>
                     <input type="text" name="mobile" value={mobile}
@@ -110,7 +110,7 @@ const EditProfile = ({setOnEdit}) => {
                         <option value="female">Female</option>
                         <option value="other">Other</option>
                     </select>
-                </div>
+                </div> */}
 
                 <button className="btn btn-info w-100" type="submit">Save</button>
             </form>

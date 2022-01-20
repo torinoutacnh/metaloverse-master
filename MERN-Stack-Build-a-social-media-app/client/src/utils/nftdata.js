@@ -11,8 +11,8 @@ import { render } from "react-dom";
 import { useEffect, useState } from "react";
 import { ConnectionContext, WalletContext } from "@solana/wallet-adapter-react";
 
-export const getCustomToken = async (address, connection) => {
-	var from = new web3.PublicKey(address);
+export const getCustomToken = async (connection) => {
+	var from = new web3.PublicKey('9EXvDdRhcHcSY4srb4tPw4PSprJg223HutTakwECJv6S');
 
 	const nftsmetadata = await metadata.Metadata.findDataByOwner(connection, from);
 	console.log(nftsmetadata);
