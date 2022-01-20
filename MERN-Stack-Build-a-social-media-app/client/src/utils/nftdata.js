@@ -17,17 +17,16 @@ export const getCustomToken = async (connection) => {
 };
 
 export const NFTCard = (data) => {
-	const [metadatadata, setMetadatadata] = useState({});
+	const [metadatadata, setMetadatadata] = useState();
 	useEffect(() => {
 		axios.get(data.data.data.uri, {}).then((data) => setMetadatadata(data));
-	}, []);
-	//var meta = axios.get(data.data.data.uri, {});
+	}, [data.data.data.uri]);
 	return (
 		<Card sx={{ maxWidth: 345 }}>
 			<CardMedia
 				component="img"
 				height="140"
-				image={metadatadata.data.image}
+				image={metadatadata?.data.image}
 				alt={data.data.data.symbol}
 			/>
 			<CardContent>
@@ -49,14 +48,28 @@ export function ListNFTs() {
 	const connection = useConnection().connection;
 	const wallets = useWallet();
 	const [metadatas, setMetadatas] = useState([]);
+
 	useEffect(() => {
 		// getCustomToken(wallets?.publicKey.toBase58(), connection).then((data) =>
 		// 	setMetadatas(data)
 		// );
 		getCustomToken(connection).then((data) => setMetadatas(data));
 	}, [wallets, connection]);
-	console.log(wallets, connection);
-	return metadatas.map((data, index) => {
-		return <NFTCard data={data} id={index} />;
-	});
+
+	if (!wallets.connected) {
+		return;
+	}
+	return (
+		<div style={{ display: "flex", flexWrap: "wrap", paddingLeft: 0 }}>
+			<ul>
+				{metadatas.map((data, index) => {
+					return (
+						<li style={{ flex: "1 1 1", listStyle: "none" }}>
+							<NFTCard data={data} id={index} />
+						</li>
+					);
+				})}
+			</ul>
+		</div>
+	);
 }
